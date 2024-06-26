@@ -1,27 +1,38 @@
 #include <Kokkos_Core.hpp>
 #include <iostream>
+#include "convolution.hpp"
+#include "histogram_equalization.hpp"
+#include "segmentation.hpp"
+#include <vectors>
 
 int main(int argc, char* argv[]) {
     Kokkos::initialize(argc, argv);
+    {
+        using View2D = Kokkos::View<int**>; 
 
-  {
-    std::vector<int> vec1 = {1, 2, 3, 4, 5, 6, 7,8,9,6};
+        int height = 512; 
+        int width = 512; 
+
+        View2D inputImage("inputImage", height, width); 
+
+        std::vector<std::vector<double>> blurFilter = 
+        {
+            {1/9.0, 1/9.0, 1/9.0},
+            {1/9.0, 1/9.0, 1/9.0},
+            {1/9.0, 1/9.0, 1/9.0}
+        };
+
+   
+
+    auto bluredImage = Convolution::applyFilter(inputImage, blurFilter); 
+    auto equalizeImage = HistogramEqualization::equlize(inputImage); 
+
+    int thereshold = 128 ; 
+
+    auto segmentation = Segmentation::thereshold(inputImage, theresholdValue); 
 
 
-    // Create a Kokkos View to store data
-    Kokkos::View<int*> nums("nums", 10);
-
-    // Copy data into Kokkos View using deep_copy
-    //
-    for(int i : vec1){
-    Kokkos::deep_copy(nums, i);
     }
 
-    Kokkos::parallel_for("print", 10, KOKKOS_LAMBDA(int i){std::cout << nums(i) << '\n' ;}); 
-
-  }
-
-    Kokkos::finalize();
-    return 0;
-}
-
+    Kokkos::finalize(); 
+    return 0; 
